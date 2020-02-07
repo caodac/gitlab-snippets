@@ -43,16 +43,20 @@ def get_direct_mappings (tx, source, target):
     query = Template('''
 match (n:`$source`)-[]-(d:DATA) with n,d
    match p=(n)-[:N_Name|:I_CODE]-(m:`$target`)-[]-(e:DATA) 
-     return distinct d, e
+     return distinct d.id, e.notation order by d.id, e.notation
 ''')
     q = query.substitute(source=source,target=target)
     #print ('...%s' % q)
     for node in tx.run(q):
-        print ('%d\t%s' % (node['d']['id'], node['e']['notation']))
+        print ('%d\t%s' % (node['d.id'], node['e.notation']))
 
 def get_gard_omim_mappings (tx):
     print ('GARD\tOMIM')
     get_direct_mappings (tx, 'S_GARD', 'S_OMIM')
+
+def get_gard_orphanet_mappings (tx):
+    print ('GARD\tORPHANET')
+    get_direct_mappings (tx, 'S_GARD', 'S_ORDO')
 
 def get_gard_hpo_umls_mappings (tx):
     print ('GARD\tHPO\tUMLS')
@@ -73,6 +77,7 @@ if __name__ == "__main__":
     with driver.session() as session:
         #session.read_transaction(show_datasources)
         #session.read_transaction(find_disease, "nguyen syndrome")
-        #session.read_transaction(get_all_diseases, 'S_GARD')
+        session.read_transaction(get_all_diseases, 'S_GARD')
         #session.read_transaction(get_gard_omim_mappings)
-        session.read_transaction(get_gard_hpo_umls_mappings)
+        #session.read_transaction(get_gard_orphanet_mappings)
+        #session.read_transaction(get_gard_hpo_umls_mappings)
